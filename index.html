@@ -3,800 +3,983 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>CAPMIX // Real-Time Tattoo Ink Sandbox</title>
+  
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#f6c300">
+  
+  <link rel="manifest" href="manifest.json">
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React 18 & ReactDOM UMD -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Babel for in-browser JSX parsing -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <title>CAPMIX // WORKSTATION</title>
 
   <style>
     :root {
-      --bg-canvas: #f6c300;
-      --panel-bg: #f6c300;
-      --panel-border: rgba(0, 0, 0, 0.25);
-      --text-main: #141414;
+      --bg-studio: #f6c300;
+      --text-main: #000000;
+      --text-muted: #262626;
+      --panel-border: rgba(0, 0, 0, 0.22);
       --btn-bg: rgba(0, 0, 0, 0.08);
       --btn-bg-hover: rgba(0, 0, 0, 0.16);
-      --thumb-bg: #141414;
-      --track-bg: rgba(0, 0, 0, 0.2);
+      --slider-track: rgba(0, 0, 0, 0.25);
+      --slider-thumb: #000000;
+      --card-bg: rgba(0, 0, 0, 0.05);
+      --cap-plastic-edge: rgba(255, 255, 255, 0.7);
+      --cap-shadow: rgba(0, 0, 0, 0.35);
     }
 
     body.theme-dark {
-      --bg-canvas: #111215;
-      --panel-bg: #181a1f;
-      --panel-border: rgba(255, 255, 255, 0.15);
-      --text-main: #f0f0f0;
+      --bg-studio: #101114;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --panel-border: rgba(255, 255, 255, 0.14);
       --btn-bg: rgba(255, 255, 255, 0.08);
       --btn-bg-hover: rgba(255, 255, 255, 0.16);
-      --thumb-bg: #f6c300;
-      --track-bg: rgba(255, 255, 255, 0.18);
+      --slider-track: rgba(255, 255, 255, 0.2);
+      --slider-thumb: #f6c300;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --cap-plastic-edge: rgba(255, 255, 255, 0.45);
+      --cap-shadow: rgba(0, 0, 0, 0.75);
     }
 
     body.theme-light {
-      --bg-canvas: #ece7db;
-      --panel-bg: #f5f2eb;
-      --panel-border: rgba(0, 0, 0, 0.15);
-      --text-main: #1c1c1a;
+      --bg-studio: #ece7db;
+      --text-main: #18181b;
+      --text-muted: #52525b;
+      --panel-border: rgba(0, 0, 0, 0.18);
       --btn-bg: rgba(0, 0, 0, 0.06);
-      --btn-bg-hover: rgba(0, 0, 0, 0.12);
-      --thumb-bg: #1c1c1a;
-      --track-bg: rgba(0, 0, 0, 0.15);
+      --btn-bg-hover: rgba(0, 0, 0, 0.14);
+      --slider-track: rgba(0, 0, 0, 0.2);
+      --slider-thumb: #18181b;
+      --card-bg: rgba(0, 0, 0, 0.03);
+      --cap-plastic-edge: rgba(255, 255, 255, 0.85);
+      --cap-shadow: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-studio);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-canvas);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* TOP HEADER */
+    .top-header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-family: 'Arial Black', Impact, sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .brand-subtitle {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: 0.85;
+      margin-top: 1px;
+    }
+
+    .cap-setup-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 4px 8px;
+      background: var(--btn-bg);
+      border-radius: 6px;
+      border: 1px solid var(--panel-border);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .theme-mode-cluster {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mode-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+    }
+
+    .mode-icon-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--bg-studio);
+      border: 1.5px solid var(--text-main);
+    }
+
+    .mode-icon-box {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1.5px solid var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .mode-item.active .mode-icon-circle,
+    .mode-item.active .mode-icon-box {
+      box-shadow: 0 0 0 2px var(--bg-studio), 0 0 0 4px var(--text-main);
+    }
+
+    .mode-item span {
+      font-size: 7.5px;
+      font-weight: 700;
+    }
+
+    /* WORKSPACE RESPONSIVE ENGINE */
+    .workspace {
+      flex: 1;
+      display: flex;
+      position: relative;
       overflow: hidden;
-      height: 100vh;
-      width: 100vw;
     }
 
-    .font-stencil {
-      font-family: -apple-system, BlinkMacSystemFont, "Impact", "Arial Black", sans-serif;
-      letter-spacing: -0.03em;
+    /* LANDSCAPE ORIENTATION: 3-column dock */
+    @media (orientation: landscape) {
+      .workspace {
+        display: grid;
+        grid-template-columns: 180px 1fr 280px;
+        padding: 4px 14px;
+        gap: 12px;
+      }
+      .left-rail { display: flex; flex-direction: column; gap: 8px; }
+      .right-rail { display: flex; flex-direction: column; justify-content: space-around; gap: 6px; }
+      .cap-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+      .ink-cap-3d { width: 240px; height: 190px; }
+      .cap-base-lip { width: 225px; height: 60px; }
+      .cap-cylinder-body { width: 200px; height: 115px; }
+      .cap-liquid-body { width: 190px; height: 105px; }
+      .cap-top-meniscus { width: 200px; height: 75px; }
     }
 
-    /* Glossy 3D pigment spheres */
+    /* PORTRAIT ORIENTATION: Stacked Layout */
+    @media (orientation: portrait) {
+      .workspace {
+        display: flex;
+        flex-direction: column;
+        padding: 4px 10px;
+        gap: 8px;
+        overflow-y: auto;
+      }
+      .left-rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+      }
+      .camera-tabs { flex: 1; max-width: 140px; }
+      .quick-actions { display: flex; flex-direction: row; gap: 4px; }
+      .match-section { display: none; }
+      .cap-stage {
+        flex: 1;
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .ink-cap-3d { width: 190px; height: 155px; }
+      .cap-base-lip { width: 180px; height: 50px; }
+      .cap-cylinder-body { width: 160px; height: 95px; }
+      .cap-liquid-body { width: 150px; height: 85px; }
+      .cap-top-meniscus { width: 160px; height: 60px; }
+      .right-rail {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .ink-card { flex: 1; flex-direction: column; padding: 4px; }
+      .stepper-col { flex-direction: row !important; height: auto !important; width: 100%; justify-content: space-between; }
+    }
+
+    /* SHARED LEFT CONTROLS */
+    .camera-tabs {
+      display: flex;
+      background: var(--btn-bg);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 3px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .cam-btn {
+      flex: 1;
+      text-align: center;
+      padding: 5px 0;
+      border-radius: 4px;
+      font-size: 8.5px;
+      font-weight: 800;
+      cursor: pointer;
+      color: var(--text-main);
+    }
+
+    .cam-btn.active {
+      background: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .action-row-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      background: var(--btn-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .match-section {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .swatch-pair {
+      display: flex;
+      gap: 6px;
+    }
+
+    .swatch-chip {
+      flex: 1;
+      height: 22px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.3);
+    }
+
+    /* CENTER STAGE / CAP SIMULATION */
+    .ink-cap-3d {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cap-base-lip {
+      position: absolute;
+      bottom: 2px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.45) 0%, rgba(200,200,200,0.15) 60%, rgba(0,0,0,0.3) 98%);
+      border: 2.5px solid var(--cap-plastic-edge);
+      box-shadow: 0 16px 24px var(--cap-shadow);
+      z-index: 1;
+    }
+
+    .cap-cylinder-body {
+      position: absolute;
+      bottom: 18px;
+      border-radius: 0 0 100px 100px / 0 0 40px 40px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 15%, rgba(0,0,0,0.2) 50%, rgba(255,255,255,0.15) 85%, rgba(255,255,255,0.35) 100%);
+      border-left: 2px solid var(--cap-plastic-edge);
+      border-right: 2px solid var(--cap-plastic-edge);
+      border-bottom: 3px solid var(--cap-plastic-edge);
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .cap-liquid-body {
+      position: absolute;
+      bottom: 4px;
+      border-radius: 0 0 95px 95px / 0 0 35px 35px;
+      background-color: #8c094e;
+      transition: background-color 0.08s linear;
+      box-shadow: inset 0 -10px 22px rgba(0,0,0,0.6), inset 0 8px 18px rgba(0,0,0,0.4);
+    }
+
+    .cap-top-meniscus {
+      position: absolute;
+      top: 20px;
+      border-radius: 50%;
+      background-color: #9c0a57;
+      border: 2.5px solid var(--cap-plastic-edge);
+      box-shadow: inset 0 4px 10px rgba(0,0,0,0.5), 0 3px 8px rgba(0,0,0,0.3);
+      z-index: 3;
+      overflow: hidden;
+      transition: background-color 0.08s linear;
+    }
+
+    .meniscus-gloss {
+      position: absolute;
+      top: 15%;
+      left: 18%;
+      width: 60%;
+      height: 40%;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
+      transform: rotate(-16deg);
+    }
+
+    .view-overhead {
+      display: none;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      border: 6px solid var(--cap-plastic-edge);
+      box-shadow: 0 12px 24px var(--cap-shadow);
+      background: #8c094e;
+    }
+
+    .view-submerged {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 45% 45%, #9c0a57 0%, #1a0010 100%);
+      border-radius: 8px;
+    }
+
+    .cap-info-btn {
+      position: absolute;
+      bottom: 6px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-studio);
+      border: 2px solid var(--text-main);
+      color: var(--text-main);
+      font-family: 'Times New Roman', serif;
+      font-size: 17px;
+      font-weight: bold;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* RIGHT CONTROL RAIL / INK CARDS & STEPPERS */
+    .ink-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+
+    .sphere-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      min-width: 100px;
+    }
+
     .glossy-sphere {
-      width: 64px;
-      height: 64px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       position: relative;
-      box-shadow: 
-        0 8px 16px rgba(0, 0, 0, 0.38),
-        0 2px 4px rgba(0, 0, 0, 0.2),
-        inset -4px -6px 12px rgba(0, 0, 0, 0.65),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.4);
-      border: 2px solid rgba(255, 255, 255, 0.45);
-      flex-shrink: 0;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .glossy-sphere:hover {
-      transform: scale(1.05);
-      box-shadow: 
-        0 10px 20px rgba(0, 0, 0, 0.45),
-        inset -4px -6px 12px rgba(0, 0, 0, 0.65),
-        inset 2px 2px 8px rgba(255, 255, 255, 0.6);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.35), inset -2px -3px 6px rgba(0,0,0,0.6);
+      margin-bottom: 2px;
+      border: 1.5px solid rgba(255,255,255,0.4);
     }
 
     .sphere-highlight {
       position: absolute;
       top: 10%;
-      left: 18%;
-      width: 42%;
-      height: 28%;
+      left: 20%;
+      width: 38%;
+      height: 25%;
       border-radius: 50%;
-      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0) 80%);
-      transform: rotate(-22deg);
-      pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 80%);
+      transform: rotate(-25deg);
     }
 
-    .sphere-rim-light {
-      position: absolute;
-      bottom: 8%;
-      right: 14%;
-      width: 35%;
-      height: 20%;
-      border-radius: 50%;
-      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 75%);
-      pointer-events: none;
+    .ink-title-text {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.1;
     }
 
-    /* Vertical Slider */
-    .v-slider-container {
+    .ink-badge-pct {
+      font-size: 14px;
+      font-weight: 900;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      color: var(--text-main);
+      background: var(--btn-bg);
+      border: 1px solid var(--panel-border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-top: 2px;
+    }
+
+    .stepper-col {
       display: flex;
       flex-direction: column;
       align-items: center;
-      user-select: none;
-      touch-action: none;
-      position: relative;
-      cursor: pointer;
-      padding: 4px 10px;
+      justify-content: center;
+      gap: 4px;
+      height: 70px;
     }
 
-    .v-slider-track {
-      width: 10px;
-      height: 80px;
-      background: var(--track-bg);
-      border-radius: 5px;
-      position: relative;
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(0, 0, 0, 0.15);
-    }
-
-    .v-slider-fill {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--thumb-bg);
-      border-radius: 0 0 5px 5px;
-      opacity: 0.35;
-    }
-
-    .v-slider-thumb {
-      position: absolute;
-      left: 50%;
-      transform: translate(-50%, 50%);
-      width: 24px;
-      height: 14px;
+    .step-btn {
+      width: 28px;
+      height: 20px;
+      background: var(--btn-bg);
+      border: 1px solid var(--panel-border);
+      color: var(--text-main);
       border-radius: 4px;
-      background: var(--thumb-bg);
-      border: 1.5px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
-      transition: transform 0.05s ease, box-shadow 0.1s ease;
-      pointer-events: none;
+      font-size: 10px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
     }
 
-    .v-slider-container:hover .v-slider-thumb,
-    .v-slider-container.is-active .v-slider-thumb {
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(255, 255, 255, 0.6);
-      transform: translate(-50%, 50%) scale(1.08);
+    .step-btn:active {
+      background: var(--btn-bg-hover);
+      transform: scale(0.92);
     }
 
-    .ink-swirl-wave {
-      position: absolute;
-      width: 320px;
-      height: 320px;
-      border-radius: 43% 57% 65% 35% / 40% 45% 55% 60%;
-      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 65%);
-      animation: rotateSwirl 16s linear infinite alternate;
+    /* RELIABLE NATIVE SLIDER */
+    .slider-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 70px;
     }
 
-    @keyframes rotateSwirl {
-      from { transform: rotate(0deg) scale(0.95); }
-      to { transform: rotate(180deg) scale(1.1); }
+    input[type=range].native-vertical {
+      -webkit-appearance: none;
+      appearance: none;
+      writing-mode: vertical-lr;
+      direction: rtl;
+      width: 8px;
+      height: 60px;
+      background: var(--slider-track);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range].native-vertical::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 12px;
+      border-radius: 3px;
+      background: var(--slider-thumb);
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+
+    /* BOTTOM DOCK */
+    .bottom-dock {
+      height: 42px;
+      background: var(--bg-studio);
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-shrink: 0;
+    }
+
+    .nav-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      color: var(--text-main);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .nav-tab-btn.active {
+      border-bottom: 2px solid var(--text-main);
+    }
+
+    /* MODAL SHEETS */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-box {
+      background: var(--bg-studio);
+      border: 2px solid var(--text-main);
+      color: var(--text-main);
+      border-radius: 10px;
+      padding: 14px;
+      width: 340px;
+      max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .ink-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .ink-choice-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 6px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .dot-preview {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    .color-swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .color-tile {
+      height: 36px;
+      border-radius: 6px;
+      border: 1.5px solid var(--text-main);
+      cursor: pointer;
     }
   </style>
 </head>
-<body>
-  <div id="root"></div>
+<body class="theme-colour">
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+  <!-- TOP BAR -->
+  <header class="top-header">
+    <div>
+      <div class="brand-title">CAPMIX //</div>
+      <div class="brand-subtitle">REAL-TIME WORKSTATION</div>
+    </div>
 
-    // --- SUBTRACTIVE COLOR MIXING & DELTA-E UTILITIES ---
-    function hexToRgb(hex) {
-      const clean = hex.replace('#', '');
-      const num = parseInt(clean, 16);
-      return {
-        r: (num >> 16) & 255,
-        g: (num >> 8) & 255,
-        b: num & 255
-      };
-    }
+    <div class="cap-setup-badge" onclick="alert('Cap Volume: 15mm Standard Poly')">
+      <span>⚏ CAP SETUP</span>
+    </div>
 
-    function rgbToHex(r, g, b) {
-      const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));
-      return '#' + [r, g, b].map(v => clamp(v).toString(16).padStart(2, '0')).join('');
-    }
+    <div class="theme-mode-cluster">
+      <div class="mode-item active" id="btn-mode-colour" onclick="handleColourClick()">
+        <div class="mode-icon-circle"></div>
+        <span>Colour</span>
+      </div>
+      <div class="mode-item" id="btn-mode-dark" onclick="setAppTheme('dark')">
+        <div class="mode-icon-box">🌙</div>
+        <span>Dark</span>
+      </div>
+      <div class="mode-item" id="btn-mode-light" onclick="setAppTheme('light')">
+        <div class="mode-icon-box">☀️</div>
+        <span>Light</span>
+      </div>
+    </div>
+  </header>
 
-    function mixSubtractive(channels) {
-      const valid = channels.filter(c => c.percentage > 0);
-      if (valid.length === 0) return '#ffffff';
-      const total = valid.reduce((sum, c) => sum + c.percentage, 0);
+  <!-- ADAPTIVE WORKSPACE -->
+  <main class="workspace">
+    
+    <!-- LEFT UTILITY RAIL -->
+    <aside class="left-rail">
+      <div class="camera-tabs">
+        <div class="cam-btn" id="cam-top" onclick="setCameraView('top')">TOP</div>
+        <div class="cam-btn active" id="cam-front" onclick="setCameraView('front')">FRONT</div>
+        <div class="cam-btn" id="cam-ink" onclick="setCameraView('ink')">INK</div>
+      </div>
 
-      let totalC = 0, totalM = 0, totalY = 0, totalK = 0;
-      valid.forEach(c => {
-        const rgb = hexToRgb(c.ink.hex);
-        const rNorm = rgb.r / 255, gNorm = rgb.g / 255, bNorm = rgb.b / 255;
-        const k = 1 - Math.max(rNorm, gNorm, bNorm);
-        const invK = 1 - k || 0.0001;
-        const cyan = (1 - rNorm - k) / invK;
-        const magenta = (1 - gNorm - k) / invK;
-        const yellow = (1 - bNorm - k) / invK;
+      <div class="quick-actions">
+        <button class="action-row-btn" onclick="alert('Reference Loaded: #8c094e')">📥 Load Color</button>
+        <button class="action-row-btn" onclick="alert('Saved to Project Palette')">🎨 Save Palette</button>
+        <button class="action-row-btn" onclick="alert('Added to Favorites')">★ Add Favorite</button>
+      </div>
 
-        const weight = c.percentage / total;
-        totalC += cyan * weight;
-        totalM += magenta * weight;
-        totalY += yellow * weight;
-        totalK += k * weight;
-      });
+      <div class="match-section">
+        <div style="font-size: 8px; font-weight: 800; opacity: 0.85;">delta · E match: 0.1 (EXACT)</div>
+        <div class="swatch-pair">
+          <div class="swatch-chip" id="target-swatch" style="background-color: #8c094e;"></div>
+          <div class="swatch-chip" id="result-swatch" style="background-color: #8c094e;"></div>
+        </div>
+      </div>
+    </aside>
 
-      const invKFinal = 1 - totalK;
-      const r = Math.round(255 * (1 - totalC) * invKFinal);
-      const g = Math.round(255 * (1 - totalM) * invKFinal);
-      const b = Math.round(255 * (1 - totalY) * invKFinal);
-      return rgbToHex(r, g, b);
-    }
+    <!-- CENTER INK CAP STAGE -->
+    <section class="cap-stage">
+      <div class="ink-cap-3d" id="viewport-front">
+        <div class="cap-base-lip"></div>
+        <div class="cap-cylinder-body">
+          <div class="cap-liquid-body" id="cap-liquid-deep"></div>
+        </div>
+        <div class="cap-top-meniscus" id="cap-liquid-surface">
+          <div class="meniscus-gloss"></div>
+        </div>
+      </div>
 
-    function calcDeltaE(hexA, hexB) {
-      const rgbA = hexToRgb(hexA);
-      const rgbB = hexToRgb(hexB);
-      const rDiff = rgbA.r - rgbB.r;
-      const gDiff = rgbA.g - rgbB.g;
-      const bDiff = rgbA.b - rgbB.b;
-      return Math.round(Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff) / 4.41 * 10) / 10;
-    }
+      <div class="view-overhead" id="viewport-top"></div>
+      <div class="view-submerged" id="viewport-ink"></div>
 
-    // Default Inks
-    const INK_PALETTE = [
-      { id: 'pb-04', name: 'Prussian Blue', code: 'PB-04', hex: '#11224d' },
-      { id: 'fm-03', name: 'Process Magenta', code: 'FM-03', hex: '#cf087a' },
-      { id: 'pw-02', name: 'Pure White', code: 'PW-02', hex: '#fcfcfc' },
-      { id: 'tb-01', name: 'Triple Black', code: 'TB-01', hex: '#0a0a0a' },
-      { id: 'sy-05', name: 'Solar Yellow', code: 'SY-05', hex: '#ffd200' },
-      { id: 'cg-06', name: 'Cyan Green', code: 'CG-06', hex: '#00a388' }
+      <div class="cap-info-btn" onclick="toggleModal('info-modal', true)">i</div>
+    </section>
+
+    <!-- RIGHT CONTROLS: STEPPERS, SLIDERS & CHANNEL PICKERS -->
+    <aside class="right-rail">
+      
+      <!-- Channel 0 -->
+      <div class="ink-card">
+        <div class="sphere-wrap" onclick="openInkSelector(0)">
+          <div class="glossy-sphere" id="sphere-0" style="background: #0a2342;">
+            <div class="sphere-highlight"></div>
+          </div>
+          <div class="ink-title-text" id="label-ink-0">Prussian Blue</div>
+          <div class="ink-badge-pct" id="pct-0">45%</div>
+        </div>
+        <div class="stepper-col">
+          <button class="step-btn" onclick="stepRatio(0, 1)">▲</button>
+          <div class="slider-box">
+            <input type="range" class="native-vertical" min="0" max="100" value="45" id="slider-0" oninput="onDirectSlide(0, this.value)">
+          </div>
+          <button class="step-btn" onclick="stepRatio(0, -1)">▼</button>
+        </div>
+      </div>
+
+      <!-- Channel 1 -->
+      <div class="ink-card">
+        <div class="sphere-wrap" onclick="openInkSelector(1)">
+          <div class="glossy-sphere" id="sphere-1" style="background: #d6006e;">
+            <div class="sphere-highlight"></div>
+          </div>
+          <div class="ink-title-text" id="label-ink-1">Process Magenta</div>
+          <div class="ink-badge-pct" id="pct-1">45%</div>
+        </div>
+        <div class="stepper-col">
+          <button class="step-btn" onclick="stepRatio(1, 1)">▲</button>
+          <div class="slider-box">
+            <input type="range" class="native-vertical" min="0" max="100" value="45" id="slider-1" oninput="onDirectSlide(1, this.value)">
+          </div>
+          <button class="step-btn" onclick="stepRatio(1, -1)">▼</button>
+        </div>
+      </div>
+
+      <!-- Channel 2 -->
+      <div class="ink-card">
+        <div class="sphere-wrap" onclick="openInkSelector(2)">
+          <div class="glossy-sphere" id="sphere-2" style="background: #ffffff;">
+            <div class="sphere-highlight"></div>
+          </div>
+          <div class="ink-title-text" id="label-ink-2">Pure White</div>
+          <div class="ink-badge-pct" id="pct-2">10%</div>
+        </div>
+        <div class="stepper-col">
+          <button class="step-btn" onclick="stepRatio(2, 1)">▲</button>
+          <div class="slider-box">
+            <input type="range" class="native-vertical" min="0" max="100" value="10" id="slider-2" oninput="onDirectSlide(2, this.value)">
+          </div>
+          <button class="step-btn" onclick="stepRatio(2, -1)">▼</button>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- BOTTOM DOCK -->
+  <nav class="bottom-dock">
+    <div class="nav-tab-btn">🎨 Reference</div>
+    <div class="nav-tab-btn active">🧪 Mixer</div>
+    <div class="nav-tab-btn">⚏ Tray Opti</div>
+    <div class="nav-tab-btn">📁 Archive</div>
+    <div class="nav-tab-btn">⚙️ Settings</div>
+  </nav>
+
+  <!-- MODAL 1: STOCK INK PICKER TRAY -->
+  <div class="modal-backdrop" id="ink-picker-modal" onclick="toggleModal('ink-picker-modal', false)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="font-weight: 900; font-size: 12px; text-transform: uppercase;">Select Stock Ink</div>
+      <div class="ink-grid" id="ink-choices-list"></div>
+      <button class="action-row-btn" style="justify-content: center;" onclick="toggleModal('ink-picker-modal', false)">Cancel</button>
+    </div>
+  </div>
+
+  <!-- MODAL 2: STUDIO BACKGROUND COLOR SELECTOR -->
+  <div class="modal-backdrop" id="bg-picker-modal" onclick="toggleModal('bg-picker-modal', false)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="font-weight: 900; font-size: 12px; text-transform: uppercase;">Studio Background Tone</div>
+      <div class="color-swatch-grid">
+        <div class="color-tile" style="background: #f6c300;" onclick="setCustomBg('#f6c300')"></div>
+        <div class="color-tile" style="background: #f59e0b;" onclick="setCustomBg('#f59e0b')"></div>
+        <div class="color-tile" style="background: #e11d48;" onclick="setCustomBg('#e11d48')"></div>
+        <div class="color-tile" style="background: #8b5cf6;" onclick="setCustomBg('#8b5cf6')"></div>
+        <div class="color-tile" style="background: #10b981;" onclick="setCustomBg('#10b981')"></div>
+        <div class="color-tile" style="background: #0284c7;" onclick="setCustomBg('#0284c7')"></div>
+        <div class="color-tile" style="background: #475569;" onclick="setCustomBg('#475569')"></div>
+        <div class="color-tile" style="background: #1e293b;" onclick="setCustomBg('#1e293b')"></div>
+      </div>
+      <button class="action-row-btn" style="justify-content: center;" onclick="toggleModal('bg-picker-modal', false)">Done</button>
+    </div>
+  </div>
+
+  <!-- MODAL 3: DISPENSE GUIDE -->
+  <div class="modal-backdrop" id="info-modal" onclick="toggleModal('info-modal', false)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="font-weight: 900; font-size: 12px; text-transform: uppercase;">Cap Dispense Guide</div>
+      <div style="font-size: 11px; display: flex; flex-direction: column; gap: 6px;" id="drop-breakdown-table"></div>
+      <button class="action-row-btn" style="justify-content: center; margin-top: 6px;" onclick="toggleModal('info-modal', false)">Close</button>
+    </div>
+  </div>
+
+  <script>
+    /* STOCK INK INVENTORY */
+    const STOCK_CATALOG = [
+      { name: 'Prussian Blue (PB-04)', hex: '#0a2342', k: [0.85, 0.45, 0.10], s: [0.15, 0.20, 0.40] },
+      { name: 'Process Magenta (FM-03)', hex: '#d6006e', k: [0.10, 0.90, 0.30], s: [0.30, 0.10, 0.30] },
+      { name: 'World Famous Pure White (PW-02)', hex: '#ffffff', k: [0.01, 0.01, 0.01], s: [0.99, 0.99, 0.99] },
+      { name: 'Solar Yellow (SY-01)', hex: '#facc15', k: [0.05, 0.15, 0.85], s: [0.80, 0.70, 0.10] },
+      { name: 'Fire Orange (FO-08)', hex: '#ea580c', k: [0.10, 0.75, 0.90], s: [0.65, 0.25, 0.05] },
+      { name: 'True Lining Black (BK-00)', hex: '#111111', k: [0.98, 0.98, 0.98], s: [0.01, 0.01, 0.01] },
+      { name: 'Deep Burgundy (BG-09)', hex: '#581825', k: [0.60, 0.92, 0.80], s: [0.30, 0.08, 0.15] }
     ];
 
-    // --- VERTICAL SLIDER COMPONENT ---
-    function VerticalSlider({ value, onChange, height = 80, ariaLabel = "Ratio slider" }) {
-      const trackRef = useRef(null);
-      const [isDragging, setIsDragging] = useState(false);
+    let activeInks = [STOCK_CATALOG[0], STOCK_CATALOG[1], STOCK_CATALOG[2]];
+    let currentRatios = [45, 45, 10];
+    let selectedChannel = 0;
+    let isColourThemeActive = true;
 
-      const updateFromPointer = useCallback((clientY) => {
-        if (!trackRef.current) return;
-        const rect = trackRef.current.getBoundingClientRect();
-        const relativeY = clientY - rect.top;
-        const clampedY = Math.max(0, Math.min(rect.height, relativeY));
-        const pct = Math.round(((rect.height - clampedY) / rect.height) * 100);
-        onChange(Math.max(0, Math.min(100, pct)));
-      }, [onChange]);
+    /* KUBELKA-MUNK MIXING CORE */
+    function kmReflectance(k, s) {
+      if (s <= 0.0001) return 0;
+      let ks = k / s;
+      return 1 + ks - Math.sqrt(Math.pow(ks, 2) + 2 * ks);
+    }
 
-      const handlePointerDown = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-        e.currentTarget.setPointerCapture(e.pointerId);
-        updateFromPointer(e.clientY);
-      };
+    function calculateSubtractiveMix(ratios) {
+      let sum = ratios.reduce((a, b) => a + b, 0);
+      if (sum === 0) return '#000000';
 
-      const handlePointerMove = (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        updateFromPointer(e.clientY);
-      };
+      let totalK = [0, 0, 0];
+      let totalS = [0, 0, 0];
 
-      const handlePointerUp = (e) => {
-        if (isDragging) {
-          setIsDragging(false);
-          try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+      for (let i = 0; i < 3; i++) {
+        let frac = ratios[i] / sum;
+        for (let c = 0; c < 3; c++) {
+          totalK[c] += activeInks[i].k[c] * frac;
+          totalS[c] += activeInks[i].s[c] * frac;
         }
-      };
+      }
 
-      return (
-        <div
-          role="slider"
-          aria-label={ariaLabel}
-          aria-valuenow={value}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          className={`v-slider-container w-10 flex flex-col items-center justify-center outline-none ${isDragging ? 'is-active' : ''}`}
-          style={{ height: `${height + 20}px` }}
-        >
-          <div ref={trackRef} className="v-slider-track" style={{ height: `${height}px` }}>
-            <div className="v-slider-fill" style={{ height: `${value}%` }} />
-            <div className="v-slider-thumb" style={{ bottom: `${value}%` }} />
-          </div>
-        </div>
-      );
+      let r = Math.round(kmReflectance(totalK[0], totalS[0]) * 255);
+      let g = Math.round(kmReflectance(totalK[1], totalS[1]) * 255);
+      let b = Math.round(kmReflectance(totalK[2], totalS[2]) * 255);
+
+      return "#" + [r, g, b].map(x => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('');
     }
 
-    // --- MAIN APP COMPONENT ---
-    function App() {
-      const [theme, setTheme] = useState('colour');
-      const [cameraView, setCameraView] = useState('front');
-      const [capSize, setCapSize] = useState('medium');
-      const [targetHex, setTargetHex] = useState('#8c094e');
-      const [toast, setToast] = useState(null);
-      const [isCapInfoOpen, setIsCapInfoOpen] = useState(false);
-      const [isInkSelectorOpen, setIsInkSelectorOpen] = useState(false);
-      const [selectedChanIdx, setSelectedChanIdx] = useState(0);
-      const [activeTab, setActiveTab] = useState('mixer');
-
-      const colorPickerRef = useRef(null);
-
-      // 3 Ink channels displayed together
-      const [channels, setChannels] = useState([
-        { id: 'ch-0', ink: INK_PALETTE[0], percentage: 45 },
-        { id: 'ch-1', ink: INK_PALETTE[1], percentage: 45 },
-        { id: 'ch-2', ink: INK_PALETTE[2], percentage: 10 }
-      ]);
-
-      // Apply theme to document body
-      useEffect(() => {
-        document.body.className = `theme-${theme}`;
-      }, [theme]);
-
-      // Subtractive mixed hex
-      const mixedHex = useMemo(() => mixSubtractive(channels), [channels]);
-      const deltaE = useMemo(() => calcDeltaE(targetHex, mixedHex), [targetHex, mixedHex]);
-
-      const handleSliderChange = (index, newVal) => {
-        setChannels(prev => prev.map((ch, i) => i === index ? { ...ch, percentage: newVal } : ch));
-      };
-
-      const showToast = (msg) => {
-        setToast(msg);
-        setTimeout(() => setToast(null), 2200);
-      };
-
-      const cycleCapSize = (dir) => {
-        const sizes = ['small', 'medium', 'large'];
-        const cur = sizes.indexOf(capSize);
-        const next = sizes[(cur + dir + sizes.length) % sizes.length];
-        setCapSize(next);
-      };
-
-      return (
-        <div className="w-screen h-screen flex flex-col justify-between overflow-hidden relative">
-          
-          {/* Hidden Target Color Input */}
-          <input
-            ref={colorPickerRef}
-            type="color"
-            value={targetHex}
-            onChange={(e) => setTargetHex(e.target.value)}
-            className="sr-only"
-          />
-
-          {/* Toast Notification */}
-          {toast && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 rounded-full bg-black text-white text-xs font-black shadow-2xl animate-bounce">
-              {toast}
-            </div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* TOP HEADER: Branding, Cap Setup, Theme Switchers                          */}
-          {/* ========================================================================= */}
-          <header className="border-b border-[var(--panel-border)] flex items-center justify-between px-4 md:px-6 h-14 shrink-0 z-30">
-            {/* Left: Brand */}
-            <div className="flex flex-col cursor-pointer" onClick={() => setActiveTab('mixer')}>
-              <div className="font-stencil font-black text-xl md:text-2xl leading-none">
-                CAPMIX //
-              </div>
-              <div className="text-[8.5px] md:text-[9.5px] font-black tracking-widest uppercase opacity-85 mt-0.5">
-                REAL-TIME SANDBOX
-              </div>
-            </div>
-
-            {/* Center-Left: Cap Setup Pill with Chevrons */}
-            <div className="flex items-center gap-1.5 md:gap-2">
-              <button
-                type="button"
-                onClick={() => setIsCapInfoOpen(true)}
-                className="flex flex-col items-center justify-center px-3 py-1 rounded-2xl border-2 border-black/30 hover:border-black transition-all cursor-pointer shadow-xs"
-              >
-                <div className="w-5 h-2.5 rounded-t-sm border border-black/80 bg-white/50" />
-                <span className="text-[7.5px] md:text-[8.5px] font-black tracking-wider uppercase mt-0.5">
-                  CAP SETUP ({capSize.toUpperCase()})
-                </span>
-              </button>
-
-              <button
-                onClick={() => cycleCapSize(-1)}
-                className="w-6 h-6 rounded-full hover:bg-[var(--btn-bg)] flex items-center justify-center text-xs font-black opacity-75 hover:opacity-100"
-              >
-                &lt;
-              </button>
-              <button
-                onClick={() => cycleCapSize(1)}
-                className="w-6 h-6 rounded-full hover:bg-[var(--btn-bg)] flex items-center justify-center text-xs font-black opacity-75 hover:opacity-100"
-              >
-                &gt;
-              </button>
-            </div>
-
-            {/* Right: Theme Switcher */}
-            <div className="flex items-center gap-2">
-              <div
-                onClick={() => setTheme('colour')}
-                className={`flex flex-col items-center cursor-pointer p-1 transition-transform ${theme === 'colour' ? 'scale-110 font-black' : 'opacity-70'}`}
-                title="CapMix Gold Theme"
-              >
-                <div className="w-5 h-5 rounded-full bg-black border-2 border-black shadow-xs" />
-                <span className="text-[8px] font-black uppercase mt-0.5">Colour</span>
-              </div>
-
-              <div
-                onClick={() => setTheme('dark')}
-                className={`flex flex-col items-center cursor-pointer p-1 transition-transform ${theme === 'dark' ? 'scale-110 font-black' : 'opacity-70'}`}
-                title="Studio Dark Theme"
-              >
-                <div className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] border-2 border-black/40 bg-black/10">
-                  🌙
-                </div>
-                <span className="text-[8px] font-black uppercase mt-0.5">Dark</span>
-              </div>
-
-              <div
-                onClick={() => setTheme('light')}
-                className={`flex flex-col items-center cursor-pointer p-1 transition-transform ${theme === 'light' ? 'scale-110 font-black' : 'opacity-70'}`}
-                title="Parchment Light Theme"
-              >
-                <div className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] border-2 border-black/40 bg-white/80">
-                  ☀️
-                </div>
-                <span className="text-[8px] font-black uppercase mt-0.5">Light</span>
-              </div>
-            </div>
-          </header>
-
-          {/* ========================================================================= */}
-          {/* MAIN STAGE (CONSOLIDATED SINGLE-SCREEN)                                    */}
-          {/* ========================================================================= */}
-          <main className="flex-1 flex flex-col md:flex-row items-stretch justify-between p-3 md:p-6 overflow-hidden gap-3 md:gap-4 relative">
-            
-            {/* --- LEFT COLUMN: Camera Switcher, Quick Actions, Delta-E Match --- */}
-            <div className="w-full md:w-[210px] lg:w-[230px] flex flex-row md:flex-col justify-between shrink-0 z-10 gap-3">
-              
-              <div className="flex flex-col gap-3 flex-1">
-                {/* Camera Tabs */}
-                <div className="bg-[var(--btn-bg)] p-1 rounded-xl flex items-center justify-between border border-[var(--panel-border)] shadow-xs">
-                  <button
-                    onClick={() => setCameraView('top')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all ${cameraView === 'top' ? 'bg-white text-black shadow-md' : 'opacity-80'}`}
-                  >
-                    TOP
-                  </button>
-                  <button
-                    onClick={() => setCameraView('front')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all ${cameraView === 'front' ? 'bg-white text-black shadow-md' : 'opacity-80'}`}
-                  >
-                    FRONT
-                  </button>
-                  <button
-                    onClick={() => setCameraView('ink')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all ${cameraView === 'ink' ? 'bg-white text-black shadow-md' : 'opacity-80'}`}
-                  >
-                    INK
-                  </button>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="hidden md:flex flex-col gap-2">
-                  <button
-                    onClick={() => colorPickerRef.current && colorPickerRef.current.click()}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--btn-bg-hover)] text-xs font-extrabold text-left transition-all"
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-[var(--btn-bg)] border border-[var(--panel-border)] flex items-center justify-center">
-                      📥
-                    </div>
-                    <span>Load Color</span>
-                  </button>
-
-                  <button
-                    onClick={() => showToast('Saved to Palette!')}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--btn-bg-hover)] text-xs font-extrabold text-left transition-all"
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-[var(--btn-bg)] border border-[var(--panel-border)] flex items-center justify-center">
-                      🎨
-                    </div>
-                    <span>Save to Palette</span>
-                  </button>
-
-                  <button
-                    onClick={() => showToast('Added to Favorites!')}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--btn-bg-hover)] text-xs font-extrabold text-left transition-all"
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-[var(--btn-bg)] border border-[var(--panel-border)] flex items-center justify-center">
-                      ⭐
-                    </div>
-                    <span>Add to Favorites</span>
-                  </button>
-
-                  <button
-                    onClick={() => setIsCapInfoOpen(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--btn-bg-hover)] text-xs font-extrabold text-left transition-all"
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-[var(--btn-bg)] border border-[var(--panel-border)] flex items-center justify-center">
-                      ⏱️
-                    </div>
-                    <span>Mix History</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Delta-E Match Box */}
-              <div className="flex flex-col gap-1.5 pt-1">
-                <div className="text-[11px] font-black tracking-wider opacity-85">
-                  delta · E match ({deltaE})
-                </div>
-                <div className="flex items-center gap-2">
-                  <div
-                    onClick={() => colorPickerRef.current && colorPickerRef.current.click()}
-                    className="flex-1 flex flex-col gap-1 cursor-pointer"
-                    title="Click to pick target color"
-                  >
-                    <span className="text-[9.5px] font-black opacity-80">Target Color</span>
-                    <div className="h-9 w-full rounded-lg border border-black/25 shadow-inner" style={{ backgroundColor: targetHex }} />
-                  </div>
-                  <div className="flex-1 flex flex-col gap-1">
-                    <span className="text-[9.5px] font-black opacity-80">Match Result</span>
-                    <div className="h-9 w-full rounded-lg border border-black/25 shadow-inner" style={{ backgroundColor: mixedHex }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* --- CENTER STAGE: 3D Ink Cap & Info Button --- */}
-            <div className="flex-1 flex items-center justify-center relative overflow-hidden my-2 md:my-0">
-              
-              {cameraView === 'front' && (
-                <div className="relative flex flex-col items-center justify-center w-[280px] lg:w-[350px] h-[260px] lg:h-[320px]">
-                  {/* Flared Silicone Base */}
-                  <div
-                    className="absolute bottom-4 w-[260px] lg:w-[320px] h-[75px] lg:h-[90px] rounded-full border-[3px] border-white/70 shadow-2xl z-1"
-                    style={{
-                      background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.45) 0%, rgba(220,220,220,0.18) 55%, rgba(0,0,0,0.3) 95%)',
-                      boxShadow: '0 24px 38px rgba(0,0,0,0.38), inset 0 2px 4px rgba(255,255,255,0.8)'
-                    }}
-                  />
-                  {/* Cylinder Body */}
-                  <div
-                    className="absolute bottom-14 w-[230px] lg:w-[280px] h-[150px] lg:h-[180px] rounded-b-[115px]/[48px] lg:rounded-b-[140px]/[55px] border-x-2 border-b-[3px] border-white/60 z-2 overflow-hidden flex justify-center"
-                    style={{
-                      background: 'linear-gradient(90deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.1) 18%, rgba(0,0,0,0.2) 50%, rgba(255,255,255,0.15) 82%, rgba(255,255,255,0.45) 100%)'
-                    }}
-                  >
-                    <div
-                      className="absolute bottom-2 w-[218px] lg:w-[264px] h-[136px] lg:h-[162px] rounded-b-[109px]/[42px] lg:rounded-b-[132px]/[48px]"
-                      style={{
-                        backgroundColor: mixedHex,
-                        boxShadow: 'inset 0 -18px 30px rgba(0,0,0,0.7), inset 0 10px 25px rgba(0,0,0,0.45)'
-                      }}
-                    />
-                  </div>
-                  {/* Top Meniscus */}
-                  <div
-                    className="absolute top-12 lg:top-14 w-[230px] lg:w-[280px] h-[95px] lg:h-[112px] rounded-full border-[3px] border-white/80 z-3 overflow-hidden"
-                    style={{
-                      backgroundColor: mixedHex,
-                      boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.3)'
-                    }}
-                  >
-                    <div
-                      className="absolute top-2 left-6 w-[70%] h-[45%] rounded-full pointer-events-none transform -rotate-14"
-                      style={{
-                        background: 'linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.05) 85%, transparent 100%)'
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {cameraView === 'top' && (
-                <div
-                  className="w-[240px] lg:w-[290px] h-[240px] lg:h-[290px] rounded-full border-[12px] border-white/70 shadow-2xl relative overflow-hidden"
-                  style={{
-                    backgroundColor: mixedHex,
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 0 40px rgba(0,0,0,0.65)'
-                  }}
-                >
-                  <div className="absolute top-[12%] left-[12%] w-[75%] h-[50%] rounded-full bg-white/40 transform -rotate-25 pointer-events-none" />
-                </div>
-              )}
-
-              {cameraView === 'ink' && (
-                <div
-                  className="w-[240px] lg:w-[290px] h-[240px] lg:h-[290px] rounded-2xl shadow-2xl border-4 border-white/50 relative overflow-hidden flex items-center justify-center"
-                  style={{ backgroundColor: mixedHex }}
-                >
-                  <div className="ink-swirl-wave" />
-                  <span className="text-[10px] font-mono font-black text-white px-2.5 py-1 rounded bg-black/40 backdrop-blur-xs z-10">
-                    Macro Liquid Core
-                  </span>
-                </div>
-              )}
-
-              {/* Floating Info Button ( i ) */}
-              <button
-                type="button"
-                onClick={() => setIsCapInfoOpen(true)}
-                className="absolute bottom-2 right-2 md:bottom-4 md:right-4 w-12 h-12 rounded-full border-2 border-black bg-[#f6c300] hover:bg-[#fad02c] active:scale-95 text-black flex items-center justify-center shadow-lg cursor-pointer z-20"
-                title="Cap Info & Recipe Details"
-              >
-                <span className="font-serif font-black italic text-xl">i</span>
-              </button>
-            </div>
-
-            {/* --- RIGHT COLUMN: ALL 3 INK CHANNELS VISIBLE TOGETHER --- */}
-            <div className="w-full md:w-[260px] lg:w-[290px] flex flex-row md:flex-col justify-around md:justify-center gap-2 md:gap-4 shrink-0 z-10">
-              {channels.map((chan, idx) => (
-                <div
-                  key={chan.id}
-                  className="flex-1 md:flex-initial flex flex-col gap-1 p-2 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--panel-border)]"
-                >
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-2 px-1">
-                    {/* Glossy 3D Liquid Sphere */}
-                    <div
-                      onClick={() => { setSelectedChanIdx(idx); setIsInkSelectorOpen(true); }}
-                      className="glossy-sphere relative cursor-pointer"
-                      style={{ backgroundColor: chan.ink.hex }}
-                      title={`Click to change ink: ${chan.ink.name}`}
-                    >
-                      <div className="sphere-highlight" />
-                      <div className="sphere-rim-light" />
-                    </div>
-
-                    {/* Smooth Vertical Slider */}
-                    <VerticalSlider
-                      value={chan.percentage}
-                      onChange={(newVal) => handleSliderChange(idx, newVal)}
-                      height={70}
-                      ariaLabel={`${chan.ink.name} percentage`}
-                    />
-                  </div>
-
-                  {/* Ink Label */}
-                  <div
-                    onClick={() => { setSelectedChanIdx(idx); setIsInkSelectorOpen(true); }}
-                    className="text-[10px] md:text-xs font-black tracking-tight truncate cursor-pointer hover:underline text-center md:text-left pl-1"
-                  >
-                    {chan.ink.name} ({chan.ink.code}) - {chan.percentage}%
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </main>
-
-          {/* ========================================================================= */}
-          {/* BOTTOM DOCK NAVIGATION: Reference, Mixer, Tray Opti, Archive, Settings     */}
-          {/* ========================================================================= */}
-          <nav className="h-14 border-t border-[var(--panel-border)] flex items-center justify-around shrink-0 px-4 md:px-12 z-30">
-            <button
-              onClick={() => showToast('Reference Tool Active')}
-              className="flex flex-col items-center justify-center gap-1 opacity-70 hover:opacity-100 py-1 px-3 cursor-pointer"
-            >
-              <span className="text-base">🎨</span>
-              <span className="text-[10px] font-bold">Reference</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('mixer')}
-              className="flex flex-col items-center justify-center gap-1 font-black opacity-100 py-1 px-3 cursor-pointer relative"
-            >
-              <span className="text-base">💧</span>
-              <span className="text-[10px]">Mixer</span>
-              <div className="absolute -top-1 w-10 h-0.5 bg-[var(--text-main)] rounded-full" />
-            </button>
-
-            <button
-              onClick={() => showToast('Tray Optimizer')}
-              className="flex flex-col items-center justify-center gap-1 opacity-70 hover:opacity-100 py-1 px-3 cursor-pointer"
-            >
-              <span className="text-base">▦</span>
-              <span className="text-[10px] font-bold">Tray Opti</span>
-            </button>
-
-            <button
-              onClick={() => showToast('Recipe Archive')}
-              className="flex flex-col items-center justify-center gap-1 opacity-70 hover:opacity-100 py-1 px-3 cursor-pointer"
-            >
-              <span className="text-base">📁</span>
-              <span className="text-[10px] font-bold">Archive</span>
-            </button>
-
-            <button
-              onClick={() => showToast('Settings & Calibration')}
-              className="flex flex-col items-center justify-center gap-1 opacity-70 hover:opacity-100 py-1 px-3 cursor-pointer"
-            >
-              <span className="text-base">⚙️</span>
-              <span className="text-[10px] font-bold">Settings</span>
-            </button>
-          </nav>
-
-          {/* ========================================================================= */}
-          {/* INK SELECTOR MODAL                                                        */}
-          {/* ========================================================================= */}
-          {isInkSelectorOpen && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-              <div className="bg-[var(--bg-canvas)] border-2 border-[var(--text-main)] rounded-2xl max-w-sm w-full p-4 shadow-2xl">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-stencil font-black text-lg">SELECT PIGMENT</h3>
-                  <button onClick={() => setIsInkSelectorOpen(false)} className="text-sm font-black p-1">✕</button>
-                </div>
-                <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                  {INK_PALETTE.map(ink => (
-                    <button
-                      key={ink.id}
-                      onClick={() => {
-                        setChannels(prev => prev.map((ch, i) => i === selectedChanIdx ? { ...ch, ink } : ch));
-                        setIsInkSelectorOpen(false);
-                      }}
-                      className="flex items-center gap-2 p-2 rounded-xl bg-black/5 hover:bg-black/15 text-left border border-black/20"
-                    >
-                      <div className="w-6 h-6 rounded-full border border-black/40 shadow-xs" style={{ backgroundColor: ink.hex }} />
-                      <div className="overflow-hidden">
-                        <div className="text-xs font-black truncate">{ink.name}</div>
-                        <div className="text-[9px] opacity-75 font-mono">{ink.code}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* CAP INFO & DROP BREAKDOWN MODAL                                           */}
-          {/* ========================================================================= */}
-          {isCapInfoOpen && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-              <div className="bg-[var(--bg-canvas)] border-2 border-[var(--text-main)] rounded-2xl max-w-sm w-full p-5 shadow-2xl">
-                <div className="flex justify-between items-center mb-3 border-b border-black/20 pb-2">
-                  <div>
-                    <h3 className="font-stencil font-black text-lg">CAP DISPENSING GUIDE</h3>
-                    <p className="text-[10px] font-bold uppercase opacity-80">{capSize.toUpperCase()} CAP (30 DROPS TOTAL)</p>
-                  </div>
-                  <button onClick={() => setIsCapInfoOpen(false)} className="text-sm font-black p-1">✕</button>
-                </div>
-                
-                <div className="flex flex-col gap-2 my-4">
-                  {channels.map((ch, idx) => {
-                    const drops = Math.round((ch.percentage / 100) * 30);
-                    return (
-                      <div key={ch.id} className="flex items-center justify-between p-2 rounded-xl bg-black/5 border border-black/15">
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full border border-black/30" style={{ backgroundColor: ch.ink.hex }} />
-                          <span className="text-xs font-black">{ch.ink.name}</span>
-                        </div>
-                        <span className="text-xs font-mono font-black">{drops} drops ({ch.percentage}%)</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex items-center justify-between text-xs font-black pt-2 border-t border-black/20">
-                  <span>Delta · E Match:</span>
-                  <span className="font-mono">{deltaE}</span>
-                </div>
-
-                <button
-                  onClick={() => setIsCapInfoOpen(false)}
-                  className="w-full mt-4 py-2 rounded-xl bg-black text-white font-black text-xs uppercase"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          )}
-
-        </div>
-      );
+    /* STEPPERS AND DIRECT SLIDING */
+    function stepRatio(idx, delta) {
+      let target = Math.max(0, Math.min(100, currentRatios[idx] + delta));
+      onDirectSlide(idx, target);
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    function onDirectSlide(idx, val) {
+      let v = parseInt(val, 10);
+      currentRatios[idx] = v;
+
+      let others = [0, 1, 2].filter(i => i !== idx);
+      let remainder = 100 - v;
+      let otherSum = currentRatios[others[0]] + currentRatios[others[1]];
+
+      if (otherSum === 0) {
+        currentRatios[others[0]] = Math.round(remainder / 2);
+        currentRatios[others[1]] = remainder - currentRatios[others[0]];
+      } else {
+        let f = currentRatios[others[0]] / otherSum;
+        currentRatios[others[0]] = Math.max(0, Math.round(remainder * f));
+        currentRatios[others[1]] = Math.max(0, remainder - currentRatios[others[0]]);
+      }
+
+      renderUI();
+    }
+
+    function renderUI() {
+      for (let i = 0; i < 3; i++) {
+        document.getElementById(`slider-${i}`).value = currentRatios[i];
+        document.getElementById(`pct-${i}`).textContent = `${currentRatios[i]}%`;
+        document.getElementById(`label-ink-${i}`).textContent = activeInks[i].name.split(' (')[0];
+        document.getElementById(`sphere-${i}`).style.background = activeInks[i].hex;
+      }
+
+      const mixedHex = calculateSubtractiveMix(currentRatios);
+
+      document.getElementById('cap-liquid-surface').style.backgroundColor = mixedHex;
+      document.getElementById('cap-liquid-deep').style.backgroundColor = mixedHex;
+      document.getElementById('viewport-top').style.backgroundColor = mixedHex;
+      document.getElementById('viewport-ink').style.background = `radial-gradient(circle at 45% 45%, ${mixedHex} 0%, #10020a 85%)`;
+      document.getElementById('result-swatch').style.backgroundColor = mixedHex;
+      document.getElementById('target-swatch').style.backgroundColor = mixedHex;
+
+      // Drop specifications
+      const CAP_DROPS = 20;
+      let html = `<p><strong>Standard 15mm Cap</strong> (≈ 20 Drops Total)</p>`;
+      for (let i = 0; i < 3; i++) {
+        let drops = Math.round((currentRatios[i] / 100) * CAP_DROPS);
+        html += `<div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--panel-border); padding: 4px 0;">
+          <span>${activeInks[i].name}</span>
+          <strong>≈ ${drops} drops (${currentRatios[i]}%)</strong>
+        </div>`;
+      }
+      document.getElementById('drop-breakdown-table').innerHTML = html;
+    }
+
+    /* INK CHANNEL SELECTION */
+    function openInkSelector(channelIdx) {
+      selectedChannel = channelIdx;
+      const list = document.getElementById('ink-choices-list');
+      list.innerHTML = '';
+
+      STOCK_CATALOG.forEach((ink) => {
+        const btn = document.createElement('div');
+        btn.className = 'ink-choice-btn';
+        btn.innerHTML = `
+          <div class="dot-preview" style="background:${ink.hex};"></div>
+          <span style="font-size:10.5px; font-weight:700;">${ink.name.split(' (')[0]}</span>
+        `;
+        btn.onclick = () => {
+          activeInks[selectedChannel] = ink;
+          toggleModal('ink-picker-modal', false);
+          renderUI();
+        };
+        list.appendChild(btn);
+      });
+
+      toggleModal('ink-picker-modal', true);
+    }
+
+    /* THEME & COLOUR BACKGROUND SELECTOR */
+    function handleColourClick() {
+      if (isColourThemeActive) {
+        // Already active -> open background color picker
+        toggleModal('bg-picker-modal', true);
+      } else {
+        setAppTheme('colour');
+      }
+    }
+
+    function setCustomBg(hex) {
+      document.documentElement.style.setProperty('--bg-studio', hex);
+      toggleModal('bg-picker-modal', false);
+    }
+
+    function setAppTheme(theme) {
+      document.body.classList.remove('theme-colour', 'theme-dark', 'theme-light');
+      document.querySelectorAll('.mode-item').forEach(m => m.classList.remove('active'));
+
+      if (theme === 'dark') {
+        isColourThemeActive = false;
+        document.body.classList.add('theme-dark');
+        document.getElementById('btn-mode-dark').classList.add('active');
+      } else if (theme === 'light') {
+        isColourThemeActive = false;
+        document.body.classList.add('theme-light');
+        document.getElementById('btn-mode-light').classList.add('active');
+      } else {
+        isColourThemeActive = true;
+        document.body.classList.add('theme-colour');
+        document.getElementById('btn-mode-colour').classList.add('active');
+      }
+    }
+
+    /* VIEWPORT CAMERAS */
+    function setCameraView(view) {
+      document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`cam-${view}`).classList.add('active');
+
+      document.getElementById('viewport-front').style.display = (view === 'front') ? 'flex' : 'none';
+      document.getElementById('viewport-top').style.display = (view === 'top') ? 'block' : 'none';
+      document.getElementById('viewport-ink').style.display = (view === 'ink') ? 'block' : 'none';
+    }
+
+    function toggleModal(id, show) {
+      document.getElementById(id).style.display = show ? 'flex' : 'none';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderUI();
+    });
+    
+    // Service Worker Registration for PWA Install
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
   </script>
 </body>
 </html>

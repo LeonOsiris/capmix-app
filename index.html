@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>CAPMIX // WORKSTATION & SUBTRACTIVE MIXER</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#f6c300">
+  
+  <link rel="manifest" href='data:application/manifest+json,{"name":"CAPMIX","short_name":"CAPMIX","start_url":".","display":"standalone","background_color":"#f6c300","theme_color":"#f6c300","orientation":"any","icons":[{"src":"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23f6c300%22/><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22%238c094e%22/></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
+
+  <title>CAPMIX // REAL-TIME SANDBOX</title>
+
   <style>
     :root {
       --bg-canvas: #f6c300;
@@ -12,14 +21,13 @@
       --panel-border: rgba(0, 0, 0, 0.22);
       --btn-bg: rgba(0, 0, 0, 0.08);
       --btn-bg-hover: rgba(0, 0, 0, 0.16);
-      --btn-active-border: #ffffff;
       --nav-bg: #f6c300;
       --nav-active-bar: #000000;
       --info-btn-bg: #f6c300;
       --info-btn-border: #000000;
-      --slider-track: rgba(0, 0, 0, 0.25);
-      --slider-thumb: #000000;
-      --card-bg: rgba(0, 0, 0, 0.04);
+      --track-bg: rgba(0, 0, 0, 0.2);
+      --thumb-bg: #000000;
+      --card-bg: rgba(0, 0, 0, 0.05);
       --cap-plastic-edge: rgba(255, 255, 255, 0.65);
       --cap-shadow: rgba(0, 0, 0, 0.35);
     }
@@ -31,10 +39,724 @@
       --panel-border: rgba(255, 255, 255, 0.14);
       --btn-bg: rgba(255, 255, 255, 0.07);
       --btn-bg-hover: rgba(255, 255, 255, 0.15);
-      --btn-active-border: #f6c300;
       --nav-bg: #090a0d;
       --nav-active-bar: #f6c300;
       --info-btn-bg: #1e2025;
+      --info-btn-border: #f4f4f5;
+      --track-bg: rgba(255, 255, 255, 0.2);
+      --thumb-bg: #f6c300;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --cap-plastic-edge: rgba(255, 255, 255, 0.45);
+      --cap-shadow: rgba(0, 0, 0, 0.7);
+    }
+
+    body.theme-light {
+      --bg-canvas: #ece7db;
+      --text-main: #18181b;
+      --text-muted: #52525b;
+      --panel-border: rgba(0, 0, 0, 0.18);
+      --btn-bg: rgba(0, 0, 0, 0.05);
+      --btn-bg-hover: rgba(0, 0, 0, 0.12);
+      --nav-bg: #dfd9cb;
+      --nav-active-bar: #18181b;
+      --info-btn-bg: #ece7db;
+      --info-btn-border: #18181b;
+      --track-bg: rgba(0, 0, 0, 0.18);
+      --thumb-bg: #18181b;
+      --card-bg: rgba(0, 0, 0, 0.03);
+      --cap-plastic-edge: rgba(255, 255, 255, 0.8);
+      --cap-shadow: rgba(0, 0, 0, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* TOP HEADER */
+    .top-header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-family: 'Arial Black', Impact, sans-serif;
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .brand-subtitle {
+      font-size: 8.5px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    .cap-setup-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .cap-setup-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .cap-icon {
+      width: 22px;
+      height: 14px;
+      border: 1.5px solid var(--text-main);
+      border-radius: 3px 3px 4px 4px;
+      position: relative;
+    }
+
+    .cap-icon::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: -3px;
+      right: -3px;
+      height: 3px;
+      border: 1.5px solid var(--text-main);
+      border-top: none;
+      border-radius: 0 0 3px 3px;
+    }
+
+    .cap-setup-label {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+    }
+
+    .theme-mode-cluster {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mode-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+    }
+
+    .mode-icon-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1.5px solid var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .mode-icon-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #f6c300;
+      border: 1.5px solid #000;
+    }
+
+    .mode-item.active .mode-icon-box,
+    .mode-item.active .mode-icon-circle {
+      box-shadow: 0 0 0 2px var(--bg-canvas), 0 0 0 3.5px var(--text-main);
+    }
+
+    .mode-item span {
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    /* WORKSPACE STAGE */
+    .workspace-stage {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 190px 1fr 270px;
+      padding: 4px 16px;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* LEFT UTILITIES */
+    .left-rail {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .camera-tabs {
+      display: flex;
+      background: var(--btn-bg);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 3px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .cam-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 0;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+      color: var(--text-main);
+      border: 1.5px solid transparent;
+    }
+
+    .cam-btn.active {
+      background: rgba(255, 255, 255, 0.4);
+      border-color: #ffffff;
+    }
+
+    body.theme-dark .cam-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #ffffff;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .action-row-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: var(--btn-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .action-row-btn:active {
+      background: var(--btn-bg-hover);
+      transform: scale(0.98);
+    }
+
+    .match-section {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .swatch-pair {
+      display: flex;
+      gap: 6px;
+    }
+
+    .swatch-box-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 8.5px;
+      font-weight: 700;
+    }
+
+    .swatch-chip {
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.3);
+    }
+
+    /* CENTER STAGE / CAP GRAPHICS */
+    .center-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .ink-cap-3d {
+      width: 250px;
+      height: 210px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cap-base-lip {
+      position: absolute;
+      bottom: 4px;
+      width: 236px;
+      height: 68px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.45) 0%, rgba(200,200,200,0.15) 60%, rgba(0,0,0,0.3) 98%);
+      border: 2.5px solid var(--cap-plastic-edge);
+      box-shadow: 0 16px 26px var(--cap-shadow);
+      z-index: 1;
+    }
+
+    .cap-cylinder-body {
+      position: absolute;
+      bottom: 22px;
+      width: 210px;
+      height: 130px;
+      border-radius: 0 0 105px 105px / 0 0 42px 42px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 15%, rgba(0,0,0,0.2) 50%, rgba(255,255,255,0.15) 85%, rgba(255,255,255,0.35) 100%);
+      border-left: 2px solid var(--cap-plastic-edge);
+      border-right: 2px solid var(--cap-plastic-edge);
+      border-bottom: 3px solid var(--cap-plastic-edge);
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .cap-liquid-body {
+      position: absolute;
+      bottom: 5px;
+      width: 198px;
+      height: 118px;
+      border-radius: 0 0 98px 98px / 0 0 38px 38px;
+      background-color: #8c094e;
+      transition: background-color 0.1s linear;
+      box-shadow: inset 0 -12px 25px rgba(0,0,0,0.6), inset 0 8px 20px rgba(0,0,0,0.4);
+    }
+
+    .cap-top-meniscus {
+      position: absolute;
+      top: 25px;
+      width: 210px;
+      height: 84px;
+      border-radius: 50%;
+      background-color: #9c0a57;
+      border: 2.5px solid var(--cap-plastic-edge);
+      box-shadow: inset 0 5px 12px rgba(0,0,0,0.5), 0 3px 10px rgba(0,0,0,0.3);
+      z-index: 3;
+      overflow: hidden;
+      transition: background-color 0.1s linear;
+    }
+
+    .meniscus-gloss {
+      position: absolute;
+      top: 15%;
+      left: 18%;
+      width: 60%;
+      height: 40%;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
+      transform: rotate(-16deg);
+      pointer-events: none;
+    }
+
+    .view-overhead {
+      display: none;
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      border: 8px solid var(--cap-plastic-edge);
+      box-shadow: 0 14px 28px var(--cap-shadow);
+      background: #8c094e;
+    }
+
+    .view-submerged {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 45% 45%, #9c0a57 0%, #2a0015 100%);
+      border-radius: 8px;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .ink-swirl-wave {
+      position: absolute;
+      width: 440px;
+      height: 440px;
+      border-radius: 43% 57% 65% 35% / 40% 45% 55% 60%;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 65%);
+      animation: rotateSwirl 16s linear infinite alternate;
+    }
+
+    @keyframes rotateSwirl {
+      from { transform: rotate(0deg) scale(0.95); }
+      to { transform: rotate(180deg) scale(1.1); }
+    }
+
+    .cap-info-btn {
+      position: absolute;
+      bottom: 6px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--info-btn-bg);
+      border: 2px solid var(--info-btn-border);
+      color: var(--text-main);
+      font-family: 'Times New Roman', serif;
+      font-size: 19px;
+      font-weight: bold;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* RIGHT CONTROL RAIL / INK CHANNELS & SLIDERS */
+    .right-rail {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .ink-channel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+    }
+
+    .sphere-meta-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      width: 140px;
+    }
+
+    .glossy-sphere {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      position: relative;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.35), inset -3px -4px 8px rgba(0,0,0,0.6);
+      margin-bottom: 3px;
+      border: 2px solid rgba(255,255,255,0.4);
+    }
+
+    .sphere-highlight {
+      position: absolute;
+      top: 10%;
+      left: 20%;
+      width: 38%;
+      height: 25%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 80%);
+      transform: rotate(-25deg);
+    }
+
+    .sphere-title {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.15;
+    }
+
+    .tap-to-change {
+      font-size: 7.5px;
+      text-transform: uppercase;
+      opacity: 0.7;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    /* PURE TOUCH VERTICAL SLIDERS */
+    .touch-track-wrap {
+      width: 44px;
+      height: 64px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .touch-track-groove {
+      width: 6px;
+      height: 54px;
+      background: var(--track-bg);
+      border-radius: 3px;
+      position: relative;
+      pointer-events: none;
+    }
+
+    .touch-thumb {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, 50%);
+      width: 22px;
+      height: 14px;
+      border-radius: 3px;
+      background: var(--thumb-bg);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      pointer-events: none;
+      bottom: 45%;
+    }
+
+    /* BOTTOM DOCK */
+    .bottom-dock {
+      height: 44px;
+      background: var(--nav-bg);
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-shrink: 0;
+    }
+
+    .nav-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      color: var(--text-main);
+      position: relative;
+    }
+
+    .nav-tab-btn.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 8px;
+      right: 8px;
+      height: 2.5px;
+      background: var(--nav-active-bar);
+      border-radius: 2px;
+    }
+
+    .nav-tab-label {
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    /* MODAL TRAY */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-box {
+      background: var(--bg-canvas);
+      border: 2px solid var(--text-main);
+      color: var(--text-main);
+      border-radius: 10px;
+      padding: 16px;
+      width: 380px;
+      max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      touch-action: pan-y;
+    }
+
+    .ink-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .ink-choice-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .choice-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body class="theme-colour">
+
+  <!-- TOP HEADER -->
+  <header class="top-header">
+    <div class="brand-block">
+      <div class="brand-title">CAPMIX //</div>
+      <div class="brand-subtitle">REAL-TIME SANDBOX</div>
+    </div>
+
+    <div class="cap-setup-toggle" onclick="toggleModal('cap-setup-modal', true)">
+      <div class="cap-setup-badge">
+        <div class="cap-icon"></div>
+        <span class="cap-setup-label">CAP SETUP</span>
+      </div>
+    </div>
+
+    <div class="theme-mode-cluster">
+      <div class="mode-item active" id="btn-mode-colour" onclick="setAppTheme('colour')">
+        <div class="mode-icon-circle"></div>
+        <span>Colour</span>
+      </div>
+      <div class="mode-item" id="btn-mode-dark" onclick="setAppTheme('dark')">
+        <div class="mode-icon-box">🌙</div>
+        <span>Dark</span>
+      </div>
+      <div class="mode-item" id="btn-mode-light" onclick="setAppTheme('light')">
+        <div class="mode-icon-box">☀️</div>
+        <span>Light</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- WORKSPACE -->
+  <main class="workspace-stage">
+    
+    <!-- LEFT UTILITY RAIL -->
+    <aside class="left-rail">
+      <div class="camera-tabs">
+        <div class="cam-btn" id="cam-top" onclick="setCameraView('top')">TOP</div>
+        <div class="cam-btn active" id="cam-front" onclick="setCameraView('front')">FRONT</div>
+        <div class="cam-btn" id="cam-ink" onclick="setCameraView('ink')">INK</div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="action-row-btn" onclick="alert('Target Loaded: Deep Crimson #8c094e')">📥 Load Color</button>
+        <button class="action-row-btn" onclick="saveActiveRecipe()">🎨 Save Palette</button>
+        <button class="action-row-btn" onclick="alert('Pinned to Favorites')">★ Add Favorite</button>
+      </div>
+
+      <div class="match-section">
+        <div style="font-size: 8.5px; font-weight: 800; opacity: 0.85;">delta · E match: 0.1</div>
+        <div class="swatch-pair">
+          <div class="swatch-box-wrap">
+            <span>Target</span>
+            <div class="swatch-chip" id="target-swatch" style="background-color: #8c094e;"></div>
+          </div>
+          <div class="swatch-box-wrap">
+            <span>Match</span>
+            <div class="swatch-chip" id="result-swatch" style="background-color: #8c094e;"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER INK CAP STAGE -->
+    <section class="center-stage">
+      <div class="ink-cap-3d" id="viewport-front">
+        <div class="cap-base-lip" id="cap-lip-el"></div>
+        <div class="cap-cylinder-body">
+          <div class="cap-liquid-body" id="cap-liquid-deep"></div>
+        </div>
+        <div class="cap-top-meniscus" id="cap-liquid-surface">
+          <div class="meniscus-gloss"></div>
+        </div>
+      </div>
+
+      <div class="view-overhead" id="viewport-top"></div>
+      <div class="view-submerged" id="viewport-ink">
+        <div class="ink-swirl-wave"></div>
+      </div>
+
+      <div class="cap-info-btn" onclick="toggleModal('info-modal', true)">i</div>
+    </section>
+
+    <!-- RIGHT RAIL (3 INK SLIDERS & CHANNEL PICKERS) -->
+    <aside class="right-rail">
+      
+      <!-- Channel 0 -->
+      <div class="ink-channel">
+        <div class="sphere-meta-wrap" onclick="openInkSelector(0)">
+          <div class="glossy-sphere" id="sphere-0" style="background: #0a2342;">
+            <div class="sphere-highlight"></div>
+          </div>
+          <div class="sphere-title" id="label-ink-0">Prussian Blue - 45%</div>
+          <div class="tap-to-change">Tap to change</div>
+        </div>
+        <div class="touch-track-wrap" id="touch-track-0">
+          <div class="touch-track-groove">
+            <div class="touch-thumb" id="thumb-0"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channel 1 -->
+      <div class="ink-channel">
+        <div class="sphere-meta-wrap" onclick="openInkSelector(1)">
+          <div class="glossy-sphere" id="sphere-1" style="background: #d6006e;">
+            <div class="sphere-highlight"></div>
+          </div>
+          <div class="sphere-title" id="lab      --info-btn-bg: #1e2025;
       --info-btn-border: #f4f4f5;
       --slider-track: rgba(255, 255, 255, 0.22);
       --slider-thumb: #f6c300;
